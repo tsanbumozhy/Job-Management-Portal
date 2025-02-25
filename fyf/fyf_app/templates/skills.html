@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills</title>
+</head>
+<body>
+    {% block content %}
+        <div class="skills">
+            <div class="skills-grid">
+                {% for skill in Skills %}
+                    <div class="skill-box">
+                        <a href="{% url 'skill_projects' skill_name=skill.name %}">{{ skill.name }}</a>
+                        <p>{{ skill.description }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    
+        {% block styles %}
+            <style>
+                .skills {
+                    padding: 3% 5%;
+                    background-image: url('https://images.pexels.com/photos/2908984/pexels-photo-2908984.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    background-attachment: fixed;
+                }
+
+                .skills-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 20px;
+                    justify-items: center;
+                    align-items: center;
+                }
+
+                .skill-box {
+                    background-color: #ffffff77;
+                    padding: 20px;
+                    text-align: center;
+                }
+
+                .skill-box a {
+                    font-size: 1.5rem;
+                    text-decoration: none;
+                    font-family: 'FontAwesome';
+                    font-variant-caps: petite-caps;
+                }
+
+                .skill-box p {
+                    margin-top: 10px;
+                    font-size: 1.2rem;
+                    font-family: cursive;
+                }
+            </style>
+        {% endblock %}
+    {% endblock %}
+</body>
+</html>
