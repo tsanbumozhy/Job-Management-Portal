@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -91,6 +92,13 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL", "postgresql://neondb_owner:npg_DPyYwMcQp8X7@ep-shrill-silence-a6dbx3c7-pooler.us-west-2.aws.neon.tech/capstone?sslmode=require"),
+        conn_max_age=600,  # Keeps connections alive longer
+    )
 }
 
 

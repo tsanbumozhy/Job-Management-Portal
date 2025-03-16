@@ -57,9 +57,6 @@
                         {{ User.username }} <i class="fa-solid fa-caret-down" style="color: inherit"></i>
                     </button>
                     <div class="dropdown-content">
-                        <a href="{% url 'my_list'%}">My Projects</a>
-                        <a href="{% url 'read_list'%}">Recent Projects</a>
-                        <!--<a href="{% url 'liked_projects'%}">Favourites</a>-->
                         <a href="{% url 'edit_profile' %}">Edit Profile</a>
                         <a href="#" onclick="logoutConfirmation()" style="color: #b40000;">
                             <i class="fa-solid fa-right-from-bracket" style="color: #b40000;"></i> logout
@@ -121,7 +118,6 @@
 
                     <a href="{% url 'my_list'%}">My Projects</a>
                     <a href="{% url 'read_list'%}">Recent Projects</a>
-                    <a href="{% url 'liked_projects'%}">Favourites</a>
                 </div>
             </div>
         </footer>

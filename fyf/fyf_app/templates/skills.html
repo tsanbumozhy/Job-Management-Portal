@@ -17,7 +17,6 @@
                 {% for skill in Skills %}
                     <div class="skill-box">
                         <a href="{% url 'skill_projects' skill_name=skill.name %}">{{ skill.name }}</a>
-                        <p>{{ skill.description }}</p>
                     </div>
                 {% endfor %}
             </div>

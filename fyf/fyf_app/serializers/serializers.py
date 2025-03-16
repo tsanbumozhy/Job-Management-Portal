@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from fyf_app.models import Profile, Skill, Projects, Like, Comment
+from fyf_app.models import Profile, Skill, Projects
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,13 +30,3 @@ class ProjectsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
         fields = ['author', 'title', 'skill_id', 'description', 'cover_image', 'content_url']
-
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = '__all__'
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = '__all__'

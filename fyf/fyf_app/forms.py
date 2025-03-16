@@ -3,14 +3,14 @@ from django.core.files import File
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Profile, Projects, Skill, Comment
+from .models import Profile, Projects, Skill, Education, Experience, JobListing, JobApplication
 
 class RegistrationForm(forms.Form):
     username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={'placeholder': 'Username'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Email'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}))
-    pen_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Pen Name'}))
+    full_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Full Name'}))
     profile_photo = forms.ImageField(widget=forms.ClearableFileInput(attrs={'class': 'my-custom-class'}))
     bio = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 3, 'cols': 35}))
 
@@ -45,7 +45,7 @@ class RegistrationForm(forms.Form):
         
         profile_data = {
             'user': user,
-            'pen_name': self.cleaned_data['pen_name'],
+            'full_name': self.cleaned_data['full_name'],
             'bio': self.cleaned_data['bio'],
         }
         
@@ -59,29 +59,42 @@ class RegistrationForm(forms.Form):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['pen_name', 'bio', 'profile_photo']
+        fields = ['full_name', 'bio', 'profile_photo']
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 3, 'cols': 35}),
-            'pen_name': forms.TextInput(),
+            'full_name': forms.TextInput(),
             'profile_photo': forms.ClearableFileInput(attrs={'class': 'form-control-file', 'id': 'profile_photo'})
         }
 
 class SkillForm(forms.ModelForm):
     class Meta:
         model = Skill
-        fields = ['name', 'description']
+        fields = ['name']
 
 class ProjectForm(forms.ModelForm):
-    skill_id = forms.ModelMultipleChoiceField(queryset=Skill.objects.all(), widget=forms.CheckboxSelectMultiple, label='Skill', to_field_name='name')
+    skills = forms.ModelMultipleChoiceField(queryset=Skill.objects.all(), widget=forms.CheckboxSelectMultiple, label='Skills')
 
     class Meta:
         model = Projects
-        fields = ['title', 'skill_id', 'description', 'cover_image', 'content_url']
+        fields = ['title', 'skills', 'description', 'cover_image']
 
-class CommentForm(forms.ModelForm):
+class EducationForm(forms.ModelForm):
     class Meta:
-        model = Comment
-        fields = ['comment']
-        widgets = {
-            'comment': forms.Textarea(attrs={'placeholder': 'Add your comment'}),
-        }
+        model = Education
+        fields = ['title', 'institution', 'start_year', 'end_year', 'score']
+
+class ExperienceForm(forms.ModelForm):
+    class Meta:
+        model = Experience
+        fields = ['job_title', 'description', 'company_name', 'start_date', 'end_date']
+
+
+class JobListingForm(forms.ModelForm):
+    class Meta:
+        model = JobListing
+        fields = ['title', 'company', 'description', 'job_url', 'requirements', 'tech_stack', 'location', 'job_type']
+
+class JobApplicationForm(forms.ModelForm):
+    class Meta:
+        model = JobApplication
+        fields = ['job', 'applied_on', 'next_follow_up_date', 'application_medium', 'application_status', 'user_notes']

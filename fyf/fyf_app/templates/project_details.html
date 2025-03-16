@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wattpad</title>
+    <title>Forge your Future</title>
 
 </head>
     <body>
@@ -28,16 +28,11 @@
                                 <th>
                                     &nbsp;
                                     <i class="fa-regular fa-eye" style="color: inherit;"></i>
-                                    <span>Reads&nbsp;</span>
-                                </th>
-                                <th>
-                                    <i class="fa-solid fa-heart" style="color: red;"></i>
-                                    <span>Likes&nbsp;</span>
+                                    <span>Views&nbsp;</span>
                                 </th>
                             </tr>
                             <tr>
                                 <td>{{ Count.reads }}</td>
-                                <td>{{ Count.likes }}</td>
                             </tr>
                         </table>
                     </div>
@@ -52,13 +47,6 @@
                     {% for skill in Project.skill_id.all %}
                         <p class="skill">{{ skill.name }}</p>
                     {% endfor %}
-                    <a href="{% url 'add_like' project_id=Project.project_id %}" class="like-icon">
-                        {% if Like.liked == True %}
-                            <i id="like-button" class="fa-solid fa-heart" style="color: #ff0000;"></i>
-                        {% else %}
-                            <i id="like-button" class="fa-regular fa-heart" style="color: #ff0000;"></i>
-                        {% endif %}
-                    </a>
                     <p class="date" style="font-size: smaller;">Created - {{ Project.created_at|date:"F d, Y" }}</p>
                     <p style="font-size: smaller;">Last edited - {{ Project.updated_at|date:"F d, Y" }}</p>
     
@@ -117,40 +105,10 @@
                     <p>No comments yet.</p>
                 {% endfor %}
             </div>
-            <div class="add-comment" style="padding-left: 8%;">
-                <br><br>
-                <h2>Add a Review</h2>
-                <form id="comment-form" action="{% url 'add_comment' project_id=Project.project_id %}" method="POST">
-                    {% csrf_token %}
-                    <textarea id="comment-text" name="comment" rows="4" cols="50" placeholder="Write a comment"></textarea>
-                    <button type="submit">Add Comment</button>
-                </form>
-            </div>
         </div>
-
-        {% block scripts %}
-            <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    const cancelButtons = document.querySelectorAll('.cancel-comment-button');
-                    const editForms = document.querySelectorAll('.edit-comment-form');
-
-                    cancelButtons.forEach((cancelButton, index) => {
-                        cancelButton.addEventListener('click', () => {
-                            editForms[index].style.display = 'none';
-                        });
-                    });
-                });
-            </script>
-        {% endblock %}
-
 
         {% block styles %}
             <style>
-                .like-icon{
-                    float: right;
-                    padding-right: 65px;
-                }
-
                 .container{
                     margin: 60px 8%;
                     text-align: center;
@@ -220,46 +178,6 @@
 
                 .features button:hover{
                     padding: 12px 15px;
-                }
-
-                .like-button {
-                    color: black;
-                    cursor: pointer;
-                    margin: 20px 0;
-                }
-                
-                .like-button.active {
-                    color: red;
-                }
-
-                /* CSS styles for comments section */
-                .comments-section {
-                    margin: 0 15%;
-                }
-
-                .comments-list {
-                    margin: 25px 0 0 50px;
-                }
-
-                .comment-block {
-                    margin-bottom: 25px;
-                }
-
-                .comment-block .profile{
-                    display: flex;
-                }
-
-                .comment {
-                    margin: 10px 0 0 40px;
-                }
-
-                .comment-text {
-                    font-size: large;
-                }
-
-                .comment-info {
-                    font-size: small;
-                    color: #888;
                 }
             </style>
         {% endblock %}
