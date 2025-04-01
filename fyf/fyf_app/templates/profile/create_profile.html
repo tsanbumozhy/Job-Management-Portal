@@ -1,24 +1,21 @@
-{% extends 'base.html' %}
 {% load static %}
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile</title>
-
+    <title>Complete Your Profile</title>
+    
     <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
     <link rel="stylesheet" href="{% static 'css/create_.css' %}">
-
+    
     <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
-
 </head>
 <body>
     {% block content %}
     <div class="container">
-        <h5 id="title">Edit Your Profile</h5>
+        <h5 id="title">Complete Your Profile</h5>
         
         <form method="POST" enctype="multipart/form-data" id="profile-form">
             {% csrf_token %}
@@ -38,63 +35,55 @@
             <h6 class="section-title">Profile Details</h6>
             
             <div class="form-group">
-                <label for="{{ Profile.full_name.id_for_label }}">Full Name</label>
+                <label for="{{ form.full_name.id_for_label }}">Full Name</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-user"></i></span>
-                    {{ Profile.full_name }}
+                    {{ form.full_name }}
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="{{ Profile.bio.id_for_label }}">Bio</label>
+                <label for="{{ form.bio.id_for_label }}">Bio</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-                    {{ Profile.bio }}
+                    {{ form.bio }}
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="{{ Profile.github_url.id_for_label }}">GitHub Profile</label>
+                <label for="{{ form.github_url.id_for_label }}">GitHub Profile</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fab fa-github"></i></span>
-                    {{ Profile.github_url }}
+                    {{ form.github_url }}
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="{{ Profile.linkedin_url.id_for_label }}">LinkedIn Profile</label>
+                <label for="{{ form.linkedin_url.id_for_label }}">LinkedIn Profile</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fab fa-linkedin"></i></span>
-                    {{ Profile.linkedin_url }}
+                    {{ form.linkedin_url }}
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="{{ Profile.portfolio_url.id_for_label }}">Portfolio</label>
+                <label for="{{ form.portfolio_url.id_for_label }}">Portfolio</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-globe"></i></span>
-                    {{ Profile.portfolio_url }}
+                    {{ form.portfolio_url }}
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="{{ Profile.profile_photo.id_for_label }}">Profile Photo</label>
+                <label for="{{ form.profile_photo.id_for_label }}">Profile Photo</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-image"></i></span>
-                    {{ Profile.profile_photo }}
+                    {{ form.profile_photo }}
                 </div>
             </div>
             
-            <div class="form-group">
-                <img id="profile-photo-preview" src="{{ Profile.instance.profile_photo.url }}" alt="Profile Photo" width="150" style="border-radius: 100px;">
-                <br>
-                Change
-                <input type="file" name="profile_photo" class="form-control-file" id="profile-photo-input" accept="image/*">
-            </div>
-
             <div class="btn-field">
-                <button><a href="{%url 'home' %}">Cancel</a></button>
-                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <button type="submit" class="btn btn-primary">Save Profile</button>
             </div>
         </form>
     </div>

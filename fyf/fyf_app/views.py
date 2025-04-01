@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.urls import reverse_lazy
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
@@ -18,15 +18,70 @@ from django.shortcuts import render, redirect, get_object_or_404
 def home(request):
     if request.user.is_authenticated:
         # User is logged in
-        username = request.user.username
-        user_details = User.objects.get(username=username)
-        profile_details = Profile.objects.get(user=user_details.id)
+        try:
+            profile_details = Profile.objects.get(user=request.user)
+        except Profile.DoesNotExist:
+            return redirect('create_profile')
         projects = Projects.objects.all()
         skills = Skill.objects.all()
-        return render(request, 'home.html', {'User': user_details, 'Profile': profile_details, 'Skills': skills, 'Projects': projects})
+        return render(request, 'home.html', {
+            'User': request.user,
+            'Profile': profile_details,
+            'Skills': skills,
+            'Projects': projects
+        })
     else:
         # User is not logged in
         return render(request, 'home.html')
+
+def create_user(request):
+    if request.method == "POST":
+        form = RegistrationForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Automatically log in the user
+            return redirect('create_profile')  # Redirect to profile creation page
+    else:
+        form = RegistrationForm()
+
+    return render(request, 'profile/create_user.html', {'form': form})
+
+@login_required
+def create_profile(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(user=request.user)
+            projects = Projects.objects.all()
+            skills = Skill.objects.all()
+            return render(request, 'home.html', {
+                'User': request.user,
+                'Profile': request.user.profile,
+                'Skills': skills,
+                'Projects': projects
+            })
+    else:
+        form = ProfileForm()
+
+    return render(request, 'profile/create_profile.html', {'form': form})
+
+@login_required
+def edit_profile(request):
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return redirect('create_profile')
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        user = request.user
+        profile = ProfileForm(instance=profile)
+
+    return render(request, 'profile/edit_profile.html', {'User': user, 'Profile': profile})
     
 def search(request):
     username = request.user.username
@@ -36,7 +91,7 @@ def search(request):
     skills = Skill.objects.all()
     
     query = request.GET.get('q')
-    results = Projects.objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+    results = Projects.objects.filter(Q(title_icontains=query) | Q(description_icontains=query))
 
     return render(request, 'search_results.html', {'results': results, 'query': query, 'User': user_details, 'Profile': profile_details, 'Skills': skills})
     
@@ -77,31 +132,6 @@ def add_skill(request):
 
     return render(request, 'write.html', {'form': form, 'User': user_details, 'Profile': profile_details, 'Skills': skills})
 
-def create_user(request):
-    if request.method == 'POST':
-        form = RegistrationForm(request.POST, request.FILES)
-        if form.is_valid():
-            user = User.objects.create_user(
-                username=form.cleaned_data['username'],
-                email=form.cleaned_data['email'],
-                password=form.cleaned_data['password']
-            )
-            profile = Profile(
-                user=user,
-                pen_name=form.cleaned_data['pen_name'],
-                bio=form.cleaned_data['bio'],
-                profile_photo=request.FILES.get('profile_photo')
-            )
-            profile.save()
-
-            projects = Projects.objects.all()
-            skills = Skill.objects.all()
-            return render(request, 'home.html', {'User': user, 'Profile': profile, 'Skills': skills, 'Projects': projects})
-    else:
-        form = RegistrationForm()
-    
-    return render(request, 'profile/create_user.html', {'form': form})
-
 def project_details(request, project_id):
     username = request.user.username
     user_details = User.objects.get(username=username)
@@ -139,22 +169,6 @@ def create_project(request):
     skills = Skill.objects.all
 
     return render(request, 'write.html', {'form': form, 'User': user_details, 'Profile': profile_details, 'Skills': skills})
-
-def edit_profile(request):
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    else:
-        form = ProfileForm(instance=request.user.profile)
-
-    username = request.user.username
-    user_details = User.objects.get(username=username)
-    profile_details = Profile.objects.get(user=user_details.id)
-    skills = Skill.objects.all
-    
-    return render(request, 'profile/edit_profile.html', {'form': form, 'User': user_details, 'Profile': profile_details, 'Skills': skills})
 
 def my_projects(request):
     username = request.user.username

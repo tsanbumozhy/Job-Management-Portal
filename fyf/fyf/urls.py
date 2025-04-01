@@ -22,7 +22,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from fyf_app.views import UserViewSet, ProfileViewSet, SkillViewSet, ProjectsViewSet
-from fyf_app.views import home, search, logout_view, skills, skill_projects, create_user, create_project, project_details, edit_profile
+from fyf_app.views import home, search, logout_view, skills, skill_projects, create_user, create_profile, create_project, project_details, edit_profile
 from fyf_app.views import my_projects, add_skill, view_pdf
 
 router = routers.DefaultRouter()
@@ -51,7 +51,8 @@ urlpatterns = [
     path('skills/', skills, name='skills'),
     path('skill_projects/<str:skill_name>/', skill_projects, name='skill_projects'),
     
-    path('create_user/', create_user, name='create_user'),
+    path('user/', create_user, name='create_user'),
+    path('profile/', create_profile, name='create_profile'),
 
     path('profile/edit/', edit_profile, name='edit_profile'),
     path('profile/my_list/', my_projects, name='my_list'),
