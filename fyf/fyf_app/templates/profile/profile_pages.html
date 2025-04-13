@@ -61,7 +61,7 @@
                                     {% for skill in project.skill_id.all %}
                                         <p class="skill">{{ skill.name }}</p>
                                     {% endfor %}
-                                    <p class="author">By {{ project.author.profile.pen_name }}</p>
+                                    <p class="author">By {{ project.author.full_name }}</p>
                                     <p class="date">{{ project.created_at|date:"F d, Y" }}</p>
 
                                     {% if project.description|length < 150 %}

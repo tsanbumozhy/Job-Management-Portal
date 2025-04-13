@@ -1,4 +1,3 @@
-{% extends 'base.html' %}
 {% load static %}
 
 <!DOCTYPE html>
@@ -46,42 +45,10 @@
             </div>
             
             <div class="form-group">
-                <label for="{{ Profile.bio.id_for_label }}">Bio</label>
+                <label for="{{ form.objective.id_for_label }}">Objective</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-                    {{ Profile.bio }}
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ Profile.github_url.id_for_label }}">GitHub Profile</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fab fa-github"></i></span>
-                    {{ Profile.github_url }}
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ Profile.linkedin_url.id_for_label }}">LinkedIn Profile</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fab fa-linkedin"></i></span>
-                    {{ Profile.linkedin_url }}
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ Profile.portfolio_url.id_for_label }}">Portfolio</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
-                    {{ Profile.portfolio_url }}
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ Profile.profile_photo.id_for_label }}">Profile Photo</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-image"></i></span>
-                    {{ Profile.profile_photo }}
+                    {{ form.objective }}
                 </div>
             </div>
             

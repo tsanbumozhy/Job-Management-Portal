@@ -21,13 +21,14 @@ from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from fyf_app.views import UserViewSet, ProfileViewSet, SkillViewSet, ProjectsViewSet
-from fyf_app.views import home, search, logout_view, skills, skill_projects, create_user, create_profile, create_project, project_details, edit_profile
+from fyf_app.views import UserViewSet, ProfileViewSet, AdditionalInfoViewSet, SkillViewSet, ProjectsViewSet
+from fyf_app.views import home, search, logout_view, skills, skill_projects, create_user, create_profile, create_additional_info, edit_additional_info, create_project, project_details, edit_profile
 from fyf_app.views import my_projects, add_skill, view_pdf
 
 router = routers.DefaultRouter()
 router.register('users', UserViewSet)
 router.register('profiles', ProfileViewSet)
+router.register('additionalinfo', AdditionalInfoViewSet)
 router.register('skills', SkillViewSet)
 router.register('projects', ProjectsViewSet)
 
@@ -53,8 +54,11 @@ urlpatterns = [
     
     path('user/', create_user, name='create_user'),
     path('profile/', create_profile, name='create_profile'),
-
     path('profile/edit/', edit_profile, name='edit_profile'),
+    path('profile/additional/', create_additional_info, name='create_additional_info'),
+    path('profile/additional/edit/', edit_additional_info, name='edit_additional_info'),
+
+
     path('profile/my_list/', my_projects, name='my_list'),
 
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),

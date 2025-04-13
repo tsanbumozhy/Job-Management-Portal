@@ -9,6 +9,7 @@
     <title>Forge your Future</title>
 
     <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/create_.css' %}">
 
     <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
 </head>
@@ -30,11 +31,7 @@
             <button class="nav-button">
                 <button style="border-radius: 50%; margin-right: 0;">
                     {% if user.is_authenticated %}
-                        {% if user.profile.profile_photo %}
-                            <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.profile.full_name }}" style="height: 25px; border-radius: 50%; border-style: solid;">
-                        {% else %}
-                            <img src="{% static '../media/profile_photos/user.png' %}" alt="{{ user.profile.full_name }}" style="height: 25px; border-radius: 50%; border-style: solid;">
-                        {% endif %}
+                        <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.profile.full_name }}" style="height: 25px; border-radius: 50%; border-style: solid; background-color: whitesmoke;">
                     {% else %}
                         <button><a href="{% url 'login' %}">Login</a></button>
                     {% endif %}
@@ -52,7 +49,13 @@
                     </div>
                 </div>
                 {% endif %}
-            </button>
+                {% if not AdditionalInfo %}
+                    <div class="btn-field">
+                        <a href="{% url 'create_additional_info' %}" class="btn btn-warning">
+                            Complete Additional Info
+                        </a>
+                    </div>
+                {% endif %}
         </div>      
     
         <div class="search-bar">

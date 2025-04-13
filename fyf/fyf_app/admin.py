@@ -1,9 +1,25 @@
 from django.contrib import admin
-from fyf_app.models import Profile, Skill, Projects
+from fyf_app.models import (
+    Profile,
+    AdditionalInfo,
+    Skills,
+    Projects,
+    Education,
+    Experiences,
+    ResumeTemplates,
+    Resumes,
+    JobListings,
+    JobApplications,
+)
 
-# Register your models here.
-
+# Register your models here
 admin.site.register(Profile)
-admin.site.register(Skill)
+admin.site.register(AdditionalInfo)
+admin.site.register(Skills)
 admin.site.register(Projects)
-
+admin.site.register(Education)
+admin.site.register(Experiences)
+admin.site.register(ResumeTemplates)
+admin.site.register(Resumes)
+admin.site.register(JobListings)
+admin.site.register(JobApplications)

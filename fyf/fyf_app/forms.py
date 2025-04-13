@@ -3,16 +3,12 @@ from django.core.files import File
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Profile, Projects, Skill, Education, Experience, JobListing, JobApplication
+from .models import Profile, AdditionalInfo, Projects, Skills, Education, Experiences, ResumeTemplates, Resumes, JobListings, JobApplications 
 
-INDIAN_CITIES = [
-    ('Mumbai', 'Mumbai'), ('Delhi', 'Delhi'), ('Bangalore', 'Bangalore'), 
-    ('Hyderabad', 'Hyderabad'), ('Chennai', 'Chennai'), ('Kolkata', 'Kolkata'),
-    ('Pune', 'Pune'), ('Jaipur', 'Jaipur'), ('Ahmedabad', 'Ahmedabad'),
-    ('Lucknow', 'Lucknow'), ('Surat', 'Surat'), ('Chandigarh', 'Chandigarh'),
-    ('Bhopal', 'Bhopal'), ('Indore', 'Indore'), ('Patna', 'Patna'),
-    ('Nagpur', 'Nagpur'), ('Coimbatore', 'Coimbatore'), ('Mysore', 'Mysore'),
-    ('Others', 'Others')
+PROJECT_CATEGORY = [
+    ('industry', 'Industry Based Project Experience'), 
+    ('non_academic', 'Non-Academic Projects'), 
+    ('academic', 'Academic Projects')
 ]
 
 APPLICATION_MEDIUM_CHOICES = [
@@ -75,23 +71,91 @@ class RegistrationForm(forms.Form):
 
 class ProfileForm(forms.ModelForm):
     full_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Full Name'}))
-    bio = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 35, 'placeholder': 'Short bio'}), required=False)
-    github_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'GitHub profile URL'}), required=False)
-    linkedin_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'LinkedIn profile URL'}), required=False)
-    portfolio_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'Portfolio website URL'}), required=False)
+    objective = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 35, 'placeholder': 'Short objective'}))
+
     profile_photo = forms.ImageField(required=False)
 
     class Meta:
         model = Profile
-        fields = ['full_name', 'bio', 'github_url', 'linkedin_url', 'portfolio_url', 'profile_photo']
+        fields = ['full_name', 'objective', 'profile_photo']
         widgets = {
             'full_name': forms.TextInput(attrs={'placeholder': 'Full Name'}),
-            'bio': forms.Textarea(attrs={'rows': 3, 'cols': 35, 'placeholder': 'Short bio'}),
-            'github_url': forms.URLInput(attrs={'placeholder': 'GitHub profile URL'}),
-            'linkedin_url': forms.URLInput(attrs={'placeholder': 'LinkedIn profile URL'}),
-            'portfolio_url': forms.URLInput(attrs={'placeholder': 'Portfolio website URL'}),
+            'objective': forms.Textarea(attrs={'rows': 3, 'cols': 35, 'placeholder': 'Short objective'}),
             'profile_photo': forms.ClearableFileInput(attrs={'class': 'my-custom-class'})
         }
+
+    def save(self, user):
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.user = user
+        profile.full_name = self.cleaned_data['full_name']
+        profile.objective = self.cleaned_data['objective']
+        
+        profile_photo = self.cleaned_data.get('profile_photo')
+        if profile_photo:
+            profile.profile_photo.save(profile_photo.name, File(profile_photo))
+        
+        profile.save()
+        return profile
+    
+class SkillForm(forms.ModelForm):
+    class Meta:
+        model = Skills
+        fields = ['name', 'category']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter skill name'}),
+            'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Enter skill's category"})
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name', '').strip()
+        category = cleaned_data.get('category', '').strip()
+
+        if Skills.objects.filter(name__iexact=name, category__iexact=category).exists():
+            raise forms.ValidationError("This skill already exists.")
+
+        cleaned_data['name'] = name
+        cleaned_data['category'] = category
+        return cleaned_data
+
+class AdditionalInfoForm(forms.ModelForm):
+    gender = forms.ChoiceField(choices=[('Other', 'Other'), ('Male', 'Male'), ('Female', 'Female')], required=True)
+    date_of_birth = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    languages_known = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'E.g., English, Tamil, Hindi'}))
+
+    mobile_number = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Enter your mobile number'}))
+    address = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Your address', 'rows': 3}))
+    location = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Enter your location'}))
+
+    github_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'GitHub profile URL'}), required=False)
+    linkedin_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'LinkedIn profile URL'}), required=False)
+    portfolio_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'Portfolio website URL'}), required=False)
+
+    skills = forms.ModelMultipleChoiceField(queryset=Skills.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control select2'}), required=False)
+
+    achievements = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Mention any achievements or certifications.', 'rows': 3}), required=False)
+
+    resume_file = forms.FileField(widget=forms.FileInput(attrs={'accept': '.pdf,.doc,.docx'}), required=False)
+
+    class Meta:
+        model = AdditionalInfo
+        fields = ['gender', 'date_of_birth', 'languages_known', 'mobile_number', 'address', 'location', 'github_url', 'linkedin_url', 'portfolio_url', 'skills', 'achievements', 'resume_file']
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get('date_of_birth')
+        if dob:
+            from datetime import date
+            today = date.today()
+            if dob >= today:
+                raise forms.ValidationError("Date of birth cannot be in the future.")
+        return dob
+
+    def clean_languages_known(self):
+        languages = self.cleaned_data.get('languages_known')
+        if languages:
+            cleaned = [lang.strip() for lang in languages.split(',') if lang.strip()]
+            return ', '.join(cleaned)
+        return languages
 
     def clean_github_url(self):
         github_url = self.cleaned_data.get('github_url')
@@ -105,73 +169,27 @@ class ProfileForm(forms.ModelForm):
             raise forms.ValidationError("Enter a valid LinkedIn profile URL.")
         return linkedin_url
 
-    def save(self, user):
-        profile = Profile.objects.create(user=user)
-        profile.user = user
-        profile.full_name = self.cleaned_data['full_name']
-        profile.bio = self.cleaned_data['bio']
-        profile.github_url = self.cleaned_data['github_url']
-        profile.linkedin_url = self.cleaned_data['linkedin_url']
-        profile.portfolio_url = self.cleaned_data['portfolio_url']
+    def save(self, user, commit=True):
+        additional_info, created = AdditionalInfo.objects.get_or_create(user=user)
         
-        profile_photo = self.cleaned_data.get('profile_photo')
-        if profile_photo:
-            profile.profile_photo.save(profile_photo.name, File(profile_photo))
-        
-        profile.save()
-        return profile
+        additional_info.user = user
+        additional_info.gender = self.cleaned_data.get('gender')
+        additional_info.date_of_birth = self.cleaned_data.get('date_of_birth')
+        additional_info.languages_known = self.cleaned_data.get('languages_known')
+        additional_info.mobile_number = self.cleaned_data.get('mobile_number')
+        additional_info.address = self.cleaned_data.get('address')
+        additional_info.location = self.cleaned_data.get('location')
+        additional_info.github_url = self.cleaned_data.get('github_url')
+        additional_info.linkedin_url = self.cleaned_data.get('linkedin_url')
+        additional_info.portfolio_url = self.cleaned_data.get('portfolio_url')
+        additional_info.skills.set(self.cleaned_data.get('skills', []))  # For ManyToManyField
+        additional_info.achievements = self.cleaned_data.get('achievements')
+        additional_info.resume_file = self.cleaned_data.get('resume_file')
 
-class SkillForm(forms.ModelForm):
-    class Meta:
-        model = Skill
-        fields = ['name']  # Only field needed in the form
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter skill name'}),
-        }
-    
-    def clean_name(self):
-        """Ensure skill name is unique (case insensitive)."""
-        name = self.cleaned_data.get('name')
-        if Skill.objects.filter(name__iexact=name).exists():
-            raise forms.ValidationError("This skill already exists.")
-        return name
-
-class ProjectForm(forms.ModelForm):
-    class Meta:
-        model = Projects
-        fields = ['title', 'description', 'tech_stack', 'skills', 'live_url', 'github_repo_url', 'cover_image']
-        
-        widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter project title'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter project description'}),
-            'tech_stack': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Enter tech stack as JSON or comma-separated'}),
-            'skills': forms.SelectMultiple(attrs={'class': 'form-control'}),
-            'live_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter live URL (if any)'}),
-            'github_repo_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter GitHub repository URL'}),
-            'cover_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-        }
-
-    def clean_tech_stack(self):
-        """Validate tech_stack input (convert comma-separated to JSON)."""
-        tech_stack = self.cleaned_data.get('tech_stack')
-        try:
-            import json
-            tech_stack_data = json.loads(tech_stack)  # Try to parse JSON
-            if not isinstance(tech_stack_data, list):
-                raise ValueError
-            return tech_stack_data
-        except (ValueError, TypeError):
-            return [tech.strip() for tech in tech_stack.split(',') if tech.strip()]  # Convert comma-separated
-
-    def save(self, commit=True, user=None):
-        """Override save to assign the logged-in user as author."""
-        project = super().save(commit=False)
-        if user:
-            project.author = user  # Assign logged-in user as author
         if commit:
-            project.save()
-            self.save_m2m()  # Save many-to-many relationships (skills)
-        return project
+            additional_info.save()
+
+        return additional_info
 
 class EducationForm(forms.ModelForm):
     class Meta:
@@ -188,7 +206,7 @@ class EducationForm(forms.ModelForm):
 
 class ExperienceForm(forms.ModelForm):
     class Meta:
-        model = Experience
+        model = Experiences
         fields = ['job_title', 'description', 'company_name', 'start_date', 'end_date']
 
         widgets = {
@@ -199,73 +217,155 @@ class ExperienceForm(forms.ModelForm):
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
-class JobListingForm(forms.ModelForm):
-    requirements = forms.ModelMultipleChoiceField(
-        queryset=Skill.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
-        required=True
-    )
+class ProjectForm(forms.ModelForm):
+    category = forms.ChoiceField( choices = PROJECT_CATEGORY, widget=forms.Select(attrs={'class': 'form-control'}))
 
-    location = forms.ChoiceField(
-        choices=[('', 'Select City')] + INDIAN_CITIES,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True
-    )
+    name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Enter a name for the project'}))
+    title = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Enter project title'}))
+    description = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Enter project description', 'rows': 3}), required=False)
+    skills = forms.ModelMultipleChoiceField(queryset=Skills.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control select2'}), required=False)
+    github_repo_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'GitHub project URL'}), required=False)
+    live_url = forms.URLField(widget=forms.URLInput(attrs={'placeholder': 'Live project URL'}), required=False)
+
+    cover_image = forms.ImageField(required=False)
 
     class Meta:
-        model = JobListing
-        fields = ['title', 'company', 'description', 'job_url', 'requirements', 'tech_stack', 'location', 'job_type']
+        model = Projects
+        fields = ['name', 'title', 'description', 'skills', 'live_url', 'github_repo_url', 'cover_image']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter a name for the project'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter project title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter project description'}),
+            'skills': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'live_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter live URL (if any)'}),
+            'github_repo_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter GitHub repository URL'}),
+            'cover_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
+    def save(self, commit=True, user=None):
+        project = super().save(commit=False)
+        if user:
+            project.author = user
+
+        cover_image = self.cleaned_data.get('cover_image')
+        if cover_image:
+            project.cover_image.save(cover_image.name, File(cover_image))
+
+        if commit:
+            project.save()
+            self.save()
+
+        return project
+    
+class ResumeTemplateForm(forms.ModelForm):
+    class Meta:
+        model = ResumeTemplates
+        fields = ['name', 'html_file', 'css_file', 'preview_image']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Template Name'}),
+            'html_file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'css_file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'preview_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
+class ResumeForm(forms.ModelForm):
+    class Meta:
+        model = Resumes
+        fields = [
+            'template', 'full_name', 'roll_number', 'objective', 'profile_photo',
+            'languages_known', 'email', 'mobile_number', 'address', 'location',
+            'github_url', 'linkedin_url', 'portfolio_url', 'skills',
+            'selected_education', 'selected_experience', 'selected_projects',
+            'areas_of_interest', 'academic_qualification', 'achievements'
+        ]
+        widgets = {
+            'template': forms.Select(attrs={'class': 'form-control'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'roll_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'objective': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'profile_photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'languages_known': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'mobile_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'github_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'linkedin_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'portfolio_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'skills': forms.SelectMultiple(attrs={'class': 'form-control select2'}),
+            'selected_education': forms.SelectMultiple(attrs={'class': 'form-control select2'}),
+            'selected_experience': forms.SelectMultiple(attrs={'class': 'form-control select2'}),
+            'selected_projects': forms.SelectMultiple(attrs={'class': 'form-control select2'}),
+            'areas_of_interest': forms.TextInput(attrs={'class': 'form-control'}),
+            'academic_qualification': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'achievements': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields['skills'].queryset = Skills.objects.filter(user=user)
+            self.fields['selected_education'].queryset = Education.objects.filter(user=user)
+            self.fields['selected_experience'].queryset = Experiences.objects.filter(user=user)
+            self.fields['selected_projects'].queryset = Projects.objects.filter(user=user)
+
+            if not self.instance.pk:
+                profile = getattr(user, 'profile', None)
+                additional = getattr(profile, 'additionalinfo', None)
+
+                if profile:
+                    self.fields['full_name'].initial = profile.full_name
+                    self.fields['roll_number'].initial = getattr(profile, 'roll_number', '')
+
+                if additional:
+                    self.fields['email'].initial = user.email
+                    self.fields['mobile_number'].initial = additional.mobile_number
+                    self.fields['address'].initial = additional.address
+                    self.fields['location'].initial = additional.location
+                    self.fields['github_url'].initial = additional.github_url
+                    self.fields['linkedin_url'].initial = additional.linkedin_url
+                    self.fields['portfolio_url'].initial = additional.portfolio_url
+                    self.fields['profile_photo'].initial = additional.profile_photo
+                    self.fields['languages_known'].initial = additional.languages_known
+                    self.fields['objective'].initial = additional.objective
+                    self.fields['areas_of_interest'].initial = additional.areas_of_interest
+                    self.fields['academic_qualification'].initial = additional.academic_qualification
+                    self.fields['achievements'].initial = additional.achievements
+
+class JobListingForm(forms.ModelForm):
+    requirements = forms.ModelMultipleChoiceField(queryset=Skills.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control select2'}), required=False)
+
+    class Meta:
+        model = JobListings
+        fields = ['title', 'company', 'description', 'job_url', 'requirements', 'location', 'job_type']
 
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter job title'}),
             'company': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter company name'}),
+            'requirements': forms.SelectMultiple(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter job description', 'rows': 4}),
             'job_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter job application link'}),
-            'tech_stack': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter technologies (comma-separated)'}),
             'job_type': forms.Select(attrs={'class': 'form-control'}, choices=[('full-time', 'Full-Time'), ('part-time', 'Part-Time'), ('internship', 'Internship'), ('contract', 'Contract')]),
+            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter location'})
         }
 
 
 class JobApplicationForm(forms.ModelForm):
-    job = forms.ModelChoiceField(
-        queryset=JobListing.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True
-    )
+    job = forms.ModelChoiceField(queryset=JobListings.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}), required=True)
 
-    profile = forms.ModelChoiceField(
-        queryset=Profile.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True
-    )
+    applied_on = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}), required=False)
+    next_follow_up_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}), required=False)
 
-    applied_on = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        required=True
-    )
+    application_medium = forms.ChoiceField(choices=[('', 'Select Application Medium')] + APPLICATION_MEDIUM_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}), required=False)
+    application_status = forms.ChoiceField(choices=[('', 'Select Status')] + APPLICATION_STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}), required=True)
 
-    next_follow_up_date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        required=False
-    )
+    user_notes = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Add any notes...'}), required=False)
 
-    application_medium = forms.ChoiceField(
-        choices=[('', 'Select Application Medium')] + APPLICATION_MEDIUM_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=False
-    )
-
-    application_status = forms.ChoiceField(
-        choices=[('', 'Select Status')] + APPLICATION_STATUS_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=True
-    )
-
-    user_notes = forms.CharField(
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Add any notes...'}),
-        required=False
-    )
+    resume_file = forms.FileField(widget=forms.FileInput(attrs={'accept': '.pdf,.doc,.docx'}), required=False)
 
     class Meta:
-        model = JobApplication
-        fields = ['job', 'profile', 'applied_on', 'next_follow_up_date', 'application_medium', 'application_status', 'user_notes']
+        model = JobApplications
+        fields = ['job', 'applied_on', 'next_follow_up_date', 'application_medium', 'application_status', 'user_notes', 'resume_file']
