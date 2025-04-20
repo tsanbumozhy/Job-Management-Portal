@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Continue Profile - JobNest{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-4">Complete Your Profile</h2>
+
+  <!-- Education Section -->
+  <div class="mb-5">
+    <h4>Education</h4>
+    <div class="row g-3">
+      {% if educations %}
+        {% for edu in educations %}
+          <div class="col-md-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h5>{{ edu.title }}</h5>
+              <p>{{ edu.institution }}<br><small>{{ edu.start_year }} - {{ edu.end_year }}</small></p>
+              <h5>{{ edu.score }}</h5>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      <div class="col-md-4">
+        <a href="{% url 'add_education' %}" class="card add-card d-flex align-items-center justify-content-center shadow-sm text-decoration-none">
+            <i class="fa-solid fa-plus" style="font-size: larger;"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Experience Section -->
+  <div>
+    <h4>Experience</h4>
+    <div class="row g-3">
+      {% if experiences %}
+        {% for exp in experiences %}
+          <div class="col-md-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h5>{{ exp.job_title }}</h5>
+              <p>{{ exp.description }}</p>
+              <p>{{ exp.company_name }}<br><small>{{ exp.start_date }} - {{ exp.end_date|default:"Present" }}</small></p>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      <div class="col-md-4">
+        <a href="{% url 'add_experience' %}" class="card add-card d-flex align-items-center justify-content-center shadow-sm text-decoration-none">
+            <i class="fa-solid fa-plus"  style="font-size: larger;"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .add-card {
+    height: 100%;
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .add-card:hover {
+    background-color: #e9ecef;
+    border-color: #999;
+  }
+</style>
+{% endblock %}

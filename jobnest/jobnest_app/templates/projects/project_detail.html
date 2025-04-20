@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobNest</title>
+
+  <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/project_details.css' %}" />
+  <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+
+</head>
+    <body>
+        {% block content %}
+        <div class="project-detail-container">
+          <div class="project-detail-header">
+            <img src="{{ project.cover_image.url }}" alt="{{ project.name }} Cover" class="project-detail-image"/>
+            <div class="project-info">
+              <h1>{{ project.name }}</h1>
+              <h3>{{ project.title }}</h3>
+              {% if request.user == project.author %}
+                <div class="project-owner-controls">
+                    <a href="{% url 'edit_project' project.pk %}" class="btn btn-primary">✏️ Edit</a>
+                    <a href="{% url 'delete_project' project.pk %}" class="btn btn-danger">🗑️ Delete</a>
+                </div>
+               {% endif %}
+              <p><strong>By:</strong> {{ project.author.username }}</p>
+              <p><strong>Created:</strong> {{ project.created_at|date:"F j, Y" }}</p>
+              <p><strong>Last Updated:</strong> {{ project.updated_at|date:"F j, Y" }}</p>
+            </div>
+          </div>
+        
+          <div class="project-description-section">
+            <h2>Description</h2>
+            <p>{{ project.description|linebreaks }}</p>
+          </div>
+        
+          <div class="project-skills-section">
+            <h2>Skills Used</h2>
+            <ul>
+              {% for skill in project.skills.all %}
+                <li>{{ skill.name }}</li>
+              {% empty %}
+                <li>No skills listed.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        
+          <div class="project-links">
+            {% if project.github_repo_url %}
+              <a href="{{ project.github_repo_url }}" target="_blank">🔗 GitHub Repo</a>
+            {% endif %}
+            {% if project.live_url %}
+              <a href="{{ project.live_url }}" target="_blank">🌐 Live Demo</a>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if similar_projects %}
+        <div class="similar-projects">
+            <h2>Similar Projects</h2>
+            <div class="similar-projects-grid">
+            {% for p in similar_projects %}
+                <a href="{% url 'project_detail' p.pk %}" class="similar-project-card">
+                <img src="{{ p.cover_image.url }}" alt="{{ p.name }}" />
+                <div class="similar-card-text">
+                    <h4>{{ p.name }}</h4>
+                    <p>{{ p.title }}</p>
+                </div>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% endblock %}
+</body>
+</html>

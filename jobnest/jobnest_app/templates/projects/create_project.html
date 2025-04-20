@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+
+<div class="form-wrapper">
+    <h2 id="title">Create a New Project</h2>
+
+    <form method="POST" enctype="multipart/form-data" id="create-project-form">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <h3 class="section-title">Project Details</h3>
+
+        <div class="form-group">
+            <label for="{{ form.category.id_for_label }}">Category</label>
+            <div class="form-container">
+                {{ form.category }}
+                <span class="icon"><i class="fas fa-layer-group"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Project Name</label>
+            <div class="form-container">
+                {{ form.name }}
+                <span class="icon"><i class="fas fa-signature"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Project Title</label>
+            <div class="form-container">
+                {{ form.title }}
+                <span class="icon"><i class="fas fa-heading"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description</label>
+            <div class="form-container">
+                {{ form.description }}
+                <span class="icon"><i class="fas fa-align-left"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.skills.id_for_label }}">Skills Used</label>
+            <div class="form-container">
+                {{ form.skills }}
+                <span class="icon"><i class="fas fa-tools"></i></span>
+            </div>
+            <p style="font-size: smaller; margin-top: 0px;">
+            Couldn't find the right skill?
+            <a href="javascript:void(0);" class="add-skill-link" onclick="openSkillModal()">Add a new skill</a>
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.github_repo_url.id_for_label }}">GitHub Repo</label>
+            <div class="form-container">
+                {{ form.github_repo_url }}
+                <span class="icon"><i class="fab fa-github"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.live_url.id_for_label }}">Live Project URL</label>
+            <div class="form-container">
+                {{ form.live_url }}
+                <span class="icon"><i class="fas fa-globe"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.cover_image.id_for_label }}">Cover Image</label>
+            <div class="form-container">
+                {{ form.cover_image }}
+                <span class="icon"><i class="fas fa-image"></i></span>
+            </div>
+        </div>
+
+        <div class="btn-field">
+            <button type="submit" class="btn btn-primary">Create Project</button>
+        </div>
+    </form>
+</div>
+
+<!-- Skill Modal -->
+<div id="skillModal" style="font-family: Geneva, Verdana, sans-serif; display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+    <div style="background:white; width:300px; margin:100px auto; padding:20px; border-radius:10px; position:relative;">
+        <h2 id="title">Add a new Skill</h2>
+        <form id="skillForm">
+            <div class="form-group">
+                <label for="skillName">Name</label>
+                <div class="form-container">
+                    <input type="text" id="skillName" name="name" placeholder="Skill name" required />
+                    <span class="icon"><i class="fas fa-user"></i></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="skillCategory">Category</label>
+                <div class="form-container">
+                    <input type="text" id="skillCategory" name="category" placeholder="Skill category" required />
+                    <span class="icon"><i class="fas fa-align-left"></i></span>
+                </div>
+            </div>
+            <div class="btn-field">
+                <button type="submit" class="btn btn-primary">Add Skill</button>
+            </div>
+        </form>
+        <button onclick="closeSkillModal()" style="position:absolute; top:10px; right:10px;">&times;</button>
+    </div>
+</div>
+
+<!-- jQuery (required by Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Initialize Select2 -->
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+        placeholder: 'Select skills',
+        allowClear: true
+        });
+    });
+</script>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $('#skillForm').on('submit', function (e) {
+        e.preventDefault(); // ✅ Prevent default form submission
+
+        const name = $('#skillName').val();
+        const category = $('#skillCategory').val();
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "add_skill_ajax" %}', // Replace with your actual URL name
+            data: {
+                name: name,
+                category: category
+            },
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function (response) {
+                const newOption = new Option(response.name, response.id, false, true);
+                $('select[name="skills"]').append(newOption).trigger('change');
+
+                $('#skillName').val('');
+                $('#skillCategory').val('');
+                closeSkillModal();
+            },
+            error: function (xhr) {
+                const error = xhr.responseJSON?.error || 'Unknown error';
+                alert("Error adding skill: " + error);
+            }
+        });
+    });
+</script>
+
+<script>
+    function openSkillModal() {
+        $('#skillModal').show();
+    }
+
+    function closeSkillModal() {
+        $('#skillModal').hide();
+    }
+</script>
+{% endblock %}

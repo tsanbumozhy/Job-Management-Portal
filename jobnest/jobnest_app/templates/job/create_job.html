@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+
+<div class="form-wrapper">
+    <h2 id="title"><i class="fas fa-briefcase"></i> Create Job Listing</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if job_form.errors %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for field, errors in job_form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field|title }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <h3 class="section-title">Job Details</h3>
+
+        <div class="form-group">
+            <label for="{{ job_form.title.id_for_label }}">Job Title</label>
+            <div class="form-container">
+                {{ job_form.title }}
+                <span class="icon"><i class="fas fa-pen"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ job_form.company.id_for_label }}">Company Name</label>
+            <div class="form-container">
+                {{ job_form.company }}
+                <span class="icon"><i class="fas fa-building"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ job_form.description.id_for_label }}">Description</label>
+            <div class="form-container">
+                {{ job_form.description }}
+                <span class="icon"><i class="fas fa-align-left"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ job_form.job_url.id_for_label }}">Job URL</label>
+            <div class="form-container">
+                {{ job_form.job_url }}
+                <span class="icon"><i class="fas fa-link"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ job_form.skills.id_for_label }}">Requirements</label>
+            <div class="form-container">
+                {{ job_form.requirements }}
+                <span class="icon"><i class="fas fa-tools"></i></span>
+            </div>
+            <p style="font-size: smaller; margin-top: 0px;">
+            Couldn't find the right skill?
+            <a href="javascript:void(0);" class="add-skill-link" onclick="openSkillModal()">Add a new skill</a>
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ job_form.location.id_for_label }}">Location</label>
+            <div class="form-container">
+                {{ job_form.location }}
+                <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ job_form.job_type.id_for_label }}">Job Type</label>
+            <div class="form-container">
+                {{ job_form.job_type }}
+                <span class="icon"><i class="fas fa-clock"></i></span>
+            </div>
+        </div>
+
+        <hr>
+        <h3 class="section-title">Application Info</h3>
+
+        {% if app_form.errors %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for field, errors in app_form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field|title }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ app_form.applied_on.id_for_label }}">Applied On</label>
+            <div class="form-container">
+                {{ app_form.applied_on }}
+                <span class="icon"><i class="fas fa-calendar-check"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ app_form.next_follow_up_date.id_for_label }}">Next Follow Up</label>
+            <div class="form-container">
+                {{ app_form.next_follow_up_date }}
+                <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ app_form.application_medium.id_for_label }}">Application Medium</label>
+            <div class="form-container">
+                {{ app_form.application_medium }}
+                <span class="icon"><i class="fas fa-paper-plane"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ app_form.application_status.id_for_label }}">Application Status</label>
+            <div class="form-container">
+                {{ app_form.application_status }}
+                <span class="icon"><i class="fas fa-tasks"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ app_form.user_notes.id_for_label }}">Notes</label>
+            <div class="form-container">
+                {{ app_form.user_notes }}
+                <span class="icon"><i class="fas fa-sticky-note"></i></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ app_form.resume_file.id_for_label }}">Resume File</label>
+            <div class="form-container">
+                {{ app_form.resume_file }}
+                <span class="icon"><i class="fas fa-upload"></i></span>
+            </div>
+        </div>
+
+        <div class="btn-field">
+            <button type="submit" class="btn btn-primary">Save Job & Apply</button>
+        </div>
+    </form>
+</div>
+
+<!-- jQuery (required by Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Initialize Select2 -->
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+        placeholder: 'Select skills',
+        allowClear: true
+        });
+    });
+</script>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $('#skillForm').on('submit', function (e) {
+        e.preventDefault(); // ✅ Prevent default form submission
+
+        const name = $('#skillName').val();
+        const category = $('#skillCategory').val();
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "add_skill_ajax" %}', // Replace with your actual URL name
+            data: {
+                name: name,
+                category: category
+            },
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function (response) {
+                const newOption = new Option(response.name, response.id, false, true);
+                $('select[name="skills"]').append(newOption).trigger('change');
+
+                $('#skillName').val('');
+                $('#skillCategory').val('');
+                closeSkillModal();
+            },
+            error: function (xhr) {
+                const error = xhr.responseJSON?.error || 'Unknown error';
+                alert("Error adding skill: " + error);
+            }
+        });
+    });
+</script>
+
+<script>
+    function openSkillModal() {
+        $('#skillModal').show();
+    }
+
+    function closeSkillModal() {
+        $('#skillModal').hide();
+    }
+</script>
+{% endblock %}

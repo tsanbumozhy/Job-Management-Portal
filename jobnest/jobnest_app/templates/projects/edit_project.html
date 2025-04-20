@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project</title>
+
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="form-wrapper">
+        <h2 id="title">Edit Your Project</h2>
+
+        <form method="POST" enctype="multipart/form-data" id="edit-project-form">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <h3 class="section-title">Project Information</h3>
+
+            <div class="form-group">
+                <label for="{{ form.category.id_for_label }}">Category</label>
+                <div class="form-container">
+                    {{ form.category }}
+                    <span class="icon"><i class="fas fa-layer-group"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Project Name</label>
+                <div class="form-container">
+                    {{ form.name }}
+                    <span class="icon"><i class="fas fa-signature"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Project Title</label>
+                <div class="form-container">
+                    {{ form.title }}
+                    <span class="icon"><i class="fas fa-heading"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                <div class="form-container">
+                    {{ form.description }}
+                    <span class="icon"><i class="fas fa-align-left"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.skills.id_for_label }}">Skills Used</label>
+                <div class="form-container">
+                    {{ form.skills }}
+                    <span class="icon"><i class="fas fa-tools"></i></span>
+                    
+                </div>
+                <a href="{% url 'add_skill' %}" target="_blank" class="add-skill-link">+ Add a new skill</a>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.github_repo_url.id_for_label }}">GitHub Repo</label>
+                <div class="form-container">
+                    {{ form.github_repo_url }}
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.live_url.id_for_label }}">Live URL</label>
+                <div class="form-container">
+                    {{ form.live_url }}
+                    <span class="icon"><i class="fas fa-globe"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.cover_image.id_for_label }}">Cover Image</label>
+                <div class="form-container">
+                    {{ form.cover_image }}
+                    <span class="icon"><i class="fas fa-image"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="btn-field">
+                <button type="submit" class="btn btn-primary">Update Project</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2({
+                placeholder: 'Select skills',
+                allowClear: true
+            });
+        });
+    </script>
+</body>
+</html>

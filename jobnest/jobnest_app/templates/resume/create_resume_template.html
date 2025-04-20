@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Resume Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="form-wrapper">
+        <h2 id="title">Upload Resume Template</h2>
+
+        <form method="POST" enctype="multipart/form-data" id="resume-template-form">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <h3 class="section-title">Template Details</h3>
+
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Template Name</label>
+                <div class="form-container">
+                    {{ form.name }}
+                    <span class="icon"><i class="fas fa-file-alt"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.html_file.id_for_label }}">HTML File</label>
+                <div class="form-container">
+                    {{ form.html_file }}
+                    <span class="icon"><i class="fas fa-code"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.css_file.id_for_label }}">CSS File</label>
+                <div class="form-container">
+                    {{ form.css_file }}
+                    <span class="icon"><i class="fas fa-paint-brush"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.preview_image.id_for_label }}">Preview Image</label>
+                <div class="form-container">
+                    {{ form.preview_image }}
+                    <span class="icon"><i class="fas fa-image"></i></span>
+                    
+                </div>
+            </div>
+
+            <div class="btn-field">
+                <button type="submit" class="btn btn-primary">Upload Template</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

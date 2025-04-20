@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Resume</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="form-container">
+    <h5 id="title">Generate & Edit Resume</h5>
+
+    <form method="POST" enctype="multipart/form-data" id="resume-form">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- Looping through fields manually for editability -->
+        {% for field in form.visible_fields %}
+            <div class="form-group editable-section" id="section-{{ field.name }}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <span class="edit-toggle" onclick="toggleEdit('{{ field.id_for_label }}')">
+                    <i class="fas fa-pen"></i>
+                </span>
+                <div class="input-group">
+                    {% if field.name in 'objective address academic_qualification achievements' %}
+                        {{ field }}
+                    {% elif field.name == 'profile_photo' %}
+                        {% if form.initial.profile_photo %}
+                            <img src="{{ form.initial.profile_photo.url }}" alt="Current Photo" class="preview-image mb-2" style="height: 100px;">
+                        {% endif %}
+                        {{ field }}
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="btn-field">
+            <button type="submit" class="btn btn-primary">Save Resume</button>
+        </div>
+    </form>
+</div>
+
+<!-- Select2 and jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            placeholder: "Select",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+
+    function toggleEdit(fieldId) {
+        const input = document.getElementById(fieldId);
+        if (input) {
+            input.focus();
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+</script>
+
+<style>
+    .edit-toggle {
+        float: right;
+        color: #007bff;
+        cursor: pointer;
+    }
+
+    .edit-toggle:hover {
+        color: #0056b3;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .preview-image {
+        display: block;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+</body>
+</html>

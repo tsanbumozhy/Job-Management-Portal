@@ -1,0 +1,127 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}JobNest{% endblock %}</title>
+  
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+  
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}" />
+</head>
+<body>
+  <div class="content-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="{% static 'media/JobNestLogo.png' %}" alt="JobNest Logo" class="logo-img" />
+      </div>
+      
+      <nav class="menu">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
+        <a href="{% url 'my_projects' %}"><i class="fas fa-folder-open"></i> My Projects</a>
+        <a href="{% url 'my_progress' %}"><i class="fas fa-chart-line"></i> My Progress</a>
+        <a href="{% url 'my_dashboard' %}"><i class="fas fa-th-large"></i> My Dashboard</a>
+        <a href="{% url 'generate_resume' %}"><i class="fas fa-file-alt"></i> Generate Resume</a>
+
+        {% if user.is_authenticated and not not user.additional_info.is_profile_complete %}
+        <div class="btn-field mb-3">
+          <a href="{% url 'create_additional_info' %}" class="btn btn-warning">Complete your Profile</a>
+        </div>
+        {% endif %}
+
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header>
+        <form action="{% url 'search' %}" method="GET" class="flex-grow-1 me-3">
+          <input type="text" name="q" class="form-control search" placeholder="Search for Projects or People" />
+        </form>
+          
+          <div class="header-right">
+            <!-- Notifications -->
+            <div class="notification-dropdown-container" onclick="toggleNotificationDropdown()">
+              <div class="notification">
+                <i class="fas fa-bell" style="cursor: pointer;"></i>
+                {% if unread_count > 0 %}
+                  <span class="notif-count" id="notifCount">{{ unread_count }}</span>
+                {% endif %}
+              </div>
+              <div class="notification-dropdown shadow" id="notificationDropdown">
+                {% if notifications %}
+                  <ul id="notifList" class="list-unstyled">
+                    {% for notification in notifications %}
+                      <li class="notif-item {% if not notification.is_read %}unread{% endif %}" data-id="{{ notification.id }}">
+                        <p class="mb-1">{{ notification.message }}</p>
+                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="p-3 text-muted">No new notifications</p>
+                {% endif %}
+              </div>
+            </div>  
+          
+            <!-- Profile Dropdown -->
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+              <div class="profile d-flex align-items-center" data-bs-toggle="dropdown" style="cursor: pointer;">
+                {% if user.profile.profile_photo %}
+                  <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}" class="rounded-circle me-2" width="32" height="32">
+                {% else %}
+                  <img src="{% static 'media/profile_photos/default_user_avatar.png' %}" alt="{{ user.username }}" class="rounded-circle me-2" width="32" height="32">
+                {% endif %}
+                <i class="fas fa-chevron-down"></i>
+              </div>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'my_dashboard' %}">View Profile</a></li>
+                <li><a class="dropdown-item" href="{% url 'edit_profile' %}">Edit Profile</a></li>
+                <li><a class="dropdown-item" href="#" onclick="logoutConfirmation()">Logout</a></li>
+              </ul>
+            </div>
+            {% endif %}    
+          </div>  
+      </header>
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+  <script>
+    function logoutConfirmation() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+
+    function toggleNotificationDropdown() {
+      const dropdown = document.getElementById('notificationDropdown');
+      dropdown.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function (e) {
+      const notifContainer = document.querySelector('.notification-dropdown-container');
+      if (!notifContainer.contains(e.target)) {
+        document.getElementById('notificationDropdown').classList.remove('show');
+      }
+    });
+
+  </script>
+</body>
+</html>

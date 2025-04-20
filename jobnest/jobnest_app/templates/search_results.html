@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Search Results for "{{ query }}"</h2>
+
+  <!-- Projects Section -->
+  <div class="mb-5">
+    <h4>Projects</h4>
+    <div class="row">
+      {% if projects %}
+        {% for project in projects %}
+          <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+              {% if project.cover_image %}
+              <img src="{{ project.cover_image.url }}" class="card-img-top" alt="{{ project.title }}">
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">{{ project.title }}</h5>
+                <p class="card-text">{{ project.description|truncatechars:100 }}</p>
+                <a href="{% url 'project_detail' project.project_id %}" class="btn btn-primary">View Project</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No projects found matching your search.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Users Section -->
+  <div>
+    <h4>Users</h4>
+    <div class="row">
+      {% if profiles %}
+        {% for profile_user in profiles %}
+          <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm d-flex flex-column align-items-center p-3">
+              <img src="{{ profile_user.profile.profile_photo.url }}" class="rounded-circle mb-3" width="80" height="80" alt="{{ profile_user.username }}">
+              <h6>{{ profile_user.profile.full_name }}</h6>
+              <p class="text-muted">@{{ profile_user.username }}</p>
+              <a href="{% url 'user_profile' profile_user.username %}" class="btn btn-outline-primary btn-sm mt-auto">View Profile</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No users found matching your search.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
