@@ -322,6 +322,13 @@ class ResumeForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
+        # ✅ Set required fields
+        self.fields['objective'].required = True
+        self.fields['skills'].required = True
+        self.fields['selected_education'].required = True
+        self.fields['selected_experience'].required = True
+        self.fields['selected_projects'].required = True
+
         if user:
             self.fields['skills'].queryset = Skills.objects.filter(user=user)
             self.fields['selected_education'].queryset = Education.objects.filter(user=user)
@@ -332,6 +339,7 @@ class ResumeForm(forms.ModelForm):
                 profile = getattr(user, 'profile', None)
                 additional = getattr(profile, 'additionalinfo', None)
 
+                # ✅ Optional fields fallback to profile/additional
                 if profile:
                     self.fields['full_name'].initial = profile.full_name
                     self.fields['roll_number'].initial = getattr(profile, 'roll_number', '')

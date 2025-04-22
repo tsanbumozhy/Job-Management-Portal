@@ -386,8 +386,8 @@ def resume_preview(request, resume_id):
 def create_resume(request):
     templates = ResumeTemplates.objects.all()
     user = request.user
-    educations = Education.objects.filter(user)
-    experiences = Experiences.objects.filter(user)
+    educations = Education.objects.filter(user=user)
+    experiences = Experiences.objects.filter(user=user)
     profile = get_object_or_404(Profile, user=user)
     additional_info = get_object_or_404(AdditionalInfo, user=user)
 
@@ -398,6 +398,7 @@ def create_resume(request):
         if form.is_valid() and selected_template_id:
             resume = form.save(commit=False)
             resume.template = get_object_or_404(ResumeTemplates, id=selected_template_id)
+            resume.user = request.user
             resume.save()
             form.save_m2m()
             return redirect('preview_resume', resume_id=resume.resume_id)
@@ -418,17 +419,30 @@ def create_resume(request):
 def preview_resume(request, resume_id):
     resume = get_object_or_404(Resumes, resume_id=resume_id)
     template_file = resume.template.html_file.path
-    css_file = resume.template.css_file.url  # to be linked via static file or served from media
+    css_file = resume.template.css_file.url
+    user = request.user
+    profile = get_object_or_404(Profile, user=user)
+    additional_info = get_object_or_404(AdditionalInfo, user=user)
 
     with open(template_file, 'r', encoding='utf-8') as file:
         html_template = Template(file.read())
 
-    context = Context({**resume.__dict__, 'skills': resume.skills.all(), 'selected_education': resume.selected_education.all(), 'selected_experience': resume.selected_experience.all(), 'selected_projects': resume.selected_projects.all(), 'css_file': css_file})
+    context = Context({
+        **resume.__dict__,
+        'skills': resume.skills.all(),
+        'selected_education': resume.selected_education.all(),
+        'selected_experience': resume.selected_experience.all(),
+        'selected_projects': resume.selected_projects.all(),
+        'css_file': css_file,
+        'user': user,
+        'profile': profile,
+        'additional_info': additional_info,
+        'areas_of_interest_list': resume.areas_of_interest.split(',') if resume.areas_of_interest else [],
+        'achievements_list': resume.achievements.split('\n') if resume.achievements else [],
+    })
 
     rendered_html = html_template.render(context)
     return HttpResponse(rendered_html)
-
-
 
 @login_required
 def delete_resume(request, resume_id):

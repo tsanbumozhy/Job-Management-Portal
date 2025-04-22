@@ -4,6 +4,13 @@
 {% block title %}Create Resume{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
+
 <div class="container mt-5">
   <h2 class="mb-4">Create Your Resume</h2>
   <form method="POST" enctype="multipart/form-data">
@@ -24,9 +31,205 @@
       </div>
     </div>
 
-    {{ form.as_p }}
+    <div class="form-group mb-3">
+      <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+      {{ form.full_name }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.roll_number.id_for_label }}">Roll Number</label>
+      {{ form.roll_number }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.objective.id_for_label }}">Objective</label>
+      {{ form.objective }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.profile_photo.id_for_label }}">Profile Photo</label>
+      {{ form.profile_photo }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.languages_known.id_for_label }}">Languages Known</label>
+      {{ form.languages_known }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.email.id_for_label }}">Email</label>
+      {{ form.email }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.mobile_number.id_for_label }}">Mobile Number</label>
+      {{ form.mobile_number }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.address.id_for_label }}">Address</label>
+      {{ form.address }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.location.id_for_label }}">Location</label>
+      {{ form.location }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.github_url.id_for_label }}">GitHub URL</label>
+      {{ form.github_url }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.linkedin_url.id_for_label }}">LinkedIn URL</label>
+      {{ form.linkedin_url }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.portfolio_url.id_for_label }}">Portfolio URL</label>
+      {{ form.portfolio_url }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.skills.id_for_label }}">Skills</label>
+      {{ form.skills }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.selected_education.id_for_label }}">Selected Education</label>
+      {{ form.selected_education }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.selected_experience.id_for_label }}">Selected Experience</label>
+      {{ form.selected_experience }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.selected_projects.id_for_label }}">Selected Projects</label>
+      {{ form.selected_projects }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.areas_of_interest.id_for_label }}">Areas of Interest</label>
+      {{ form.areas_of_interest }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.academic_qualification.id_for_label }}">Academic Qualification</label>
+      {{ form.academic_qualification }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="{{ form.achievements.id_for_label }}">Achievements</label>
+      {{ form.achievements }}
+    </div>
 
     <button type="submit" class="btn btn-primary">Generate Resume</button>
   </form>
 </div>
+
+
+<!-- Skill Modal -->
+<div id="skillModal" style="font-family: Geneva, Verdana, sans-serif; display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+  <div style="background:white; width:300px; margin:100px auto; padding:20px; border-radius:10px; position:relative;">
+      <h2 id="title">Add a new Skill</h2>
+      <form id="skillForm">
+          <div class="form-group">
+              <label for="skillName">Name</label>
+              <div class="form-container">
+                  <input type="text" id="skillName" name="name" placeholder="Skill name" required />
+                  <span class="icon"><i class="fas fa-user"></i></span>
+              </div>
+          </div>
+          <div class="form-group">
+              <label for="skillCategory">Category</label>
+              <div class="form-container">
+                  <input type="text" id="skillCategory" name="category" placeholder="Skill category" required />
+                  <span class="icon"><i class="fas fa-align-left"></i></span>
+              </div>
+          </div>
+          <div class="btn-field">
+              <button type="submit" class="btn btn-primary">Add Skill</button>
+          </div>
+      </form>
+      <button onclick="closeSkillModal()" style="position:absolute; top:10px; right:10px;">&times;</button>
+  </div>
+</div>
+
+<!-- jQuery (required by Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Initialize Select2 -->
+<script>
+  $(document).ready(function() {
+      $('.select2').select2({
+      placeholder: 'Select skills',
+      allowClear: true
+      });
+  });
+</script>
+
+<script>
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+  $('#skillForm').on('submit', function (e) {
+      e.preventDefault(); // ✅ Prevent default form submission
+
+      const name = $('#skillName').val();
+      const category = $('#skillCategory').val();
+
+      $.ajax({
+          type: 'POST',
+          url: '{% url "add_skill_ajax" %}', // Replace with your actual URL name
+          data: {
+              name: name,
+              category: category
+          },
+          headers: {
+              'X-CSRFToken': getCookie('csrftoken')
+          },
+          success: function (response) {
+              const newOption = new Option(response.name, response.id, false, true);
+              $('select[name="skills"]').append(newOption).trigger('change');
+
+              $('#skillName').val('');
+              $('#skillCategory').val('');
+              closeSkillModal();
+          },
+          error: function (xhr) {
+              const error = xhr.responseJSON?.error || 'Unknown error';
+              alert("Error adding skill: " + error);
+          }
+      });
+  });
+</script>
+
+<script>
+  function openSkillModal() {
+      $('#skillModal').show();
+  }
+
+  function closeSkillModal() {
+      $('#skillModal').hide();
+  }
+</script>
 {% endblock %}

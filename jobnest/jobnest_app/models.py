@@ -55,6 +55,9 @@ class Education(models.Model):
     end_year = models.IntegerField(null=True, blank=True)
     score = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.title} - {self.institution}"
+
 class Experiences(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     job_title = models.CharField(max_length=255)
@@ -63,6 +66,9 @@ class Experiences(models.Model):
 
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.job_title} at {self.company_name}"
 
 class Projects(models.Model):
     project_id = models.AutoField(primary_key=True)
@@ -86,7 +92,7 @@ class Projects(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.project_id)
+        return f"{self.name}, {self.title}"
 
 class ResumeTemplates(models.Model):
     name = models.CharField(max_length=255)

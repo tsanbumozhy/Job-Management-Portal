@@ -27,7 +27,7 @@ from jobnest_app.views import (
     create_user, create_profile, profile_detail, continue_profile, edit_profile, create_additional_info, edit_additional_info, my_dashboard, add_education, add_experience,
     add_skill, add_skill_ajax,
     create_project, edit_project, delete_project, my_projects, project_detail, like_project, 
-    create_resume_template, create_resume, generate_resume, edit_resume, resume_preview, delete_resume,
+    create_resume_template, create_resume, preview_resume, generate_resume, edit_resume, resume_preview, delete_resume,
     create_job_listing_and_application, edit_job_application, all_job_listings, delete_job, my_progress, add_job_progress, progress_detail,
     search,
     mark_notification_as_read,
@@ -96,9 +96,11 @@ urlpatterns = [
     # Resume Creation & Management
     path('resume/generate/', generate_resume, name='generate_resume'),
     path('resume/create/', create_resume, name='create_resume'),
+    path('resume/preview/<int:resume_id>/', preview_resume, name='preview_resume'),
     path('resume/edit/<int:resume_id>/', edit_resume, name='edit_resume'),
     path('resume/preview/<int:resume_id>/', resume_preview, name='resume_preview'),
     path('resume/delete/<int:resume_id>/', delete_resume, name='delete_resume'),
+
 
     path('notifications/mark_read/<int:notif_id>/', mark_notification_as_read, name='mark_notification_as_read')
 
