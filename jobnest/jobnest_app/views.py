@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.forms import modelform_factory, modelformset_factory
 from django.urls import reverse_lazy
 from django.http import JsonResponse, HttpResponse, FileResponse
+from django.template import Template, Context
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
@@ -30,7 +31,7 @@ def home(request):
 
     my_projects = all_projects.filter(author=request.user)[:5]
     current_projects = all_projects.exclude(author=request.user).filter(created_at__gte=recent_threshold)[:3]
-    active_projects = all_projects.exclude(author=request.user).filter(created_at__lt=recent_threshold)[:5]
+    active_projects = all_projects.exclude(author=request.user).order_by('-views', '-likes')[:5]
 
     notif_list = Notifications.objects.filter(user=request.user, is_read=False).order_by('-created_at')
 
@@ -96,6 +97,24 @@ def edit_profile(request):
 
     return render(request, 'profile/edit_profile.html', {'User': user, 'Profile': profile})
 
+def profile_detail(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user=user)
+    additional_info = get_object_or_404(AdditionalInfo, user=user)
+
+    all_projects = Projects.objects.all().select_related('author')
+    all_users = User.objects.all().select_related('username')
+
+    projects = all_projects.filter(author=user).order_by('-created_at')
+    users = all_users.filter(username=user)
+
+    return render(request, 'profile/profile_detail.html', {
+        'additional_info': additional_info,
+        'profile': profile,
+        'user': user,
+        'Projects': projects
+    })
+
 @login_required
 def create_additional_info(request):
     try:
@@ -104,7 +123,7 @@ def create_additional_info(request):
         additional_info = None
 
     if request.method == 'POST':
-        form = AdditionalInfoForm(request.POST, instance=additional_info)
+        form = AdditionalInfoForm(request.POST, user=request.user)
         if form.is_valid():
             additional_info_obj = form.save(commit=False)
             additional_info_obj.user = request.user
@@ -185,13 +204,20 @@ def my_dashboard(request):
     except AdditionalInfo.DoesNotExist:
         return redirect('create_additional_info')
     
-    user_projects = Projects.objects.filter(author=request.user)
+    all_projects = Projects.objects.all().select_related('author')
+
+    my_projects = all_projects.filter(author=request.user).order_by('-created_at')
+
+    educations = Education.objects.filter(user=request.user)
+    experiences = Experiences.objects.filter(user=request.user)
 
     return render(request, 'profile/my_dashboard.html', {
         'user': request.user,
         'profile': profile,
         'additional_info': additional_info,
-        'user_projects': user_projects })
+        'educations': educations,
+        'experiences': experiences,
+        'MyProjects': my_projects })
 
 @login_required
 def my_projects(request):
@@ -283,26 +309,22 @@ def delete_project(request, project_id):
 
 def project_detail(request, project_id):
     project = get_object_or_404(Projects, project_id=project_id)
-    
-    similar_projects = Projects.objects.filter(skills__in=project.skills.all()).exclude(project_id=project_id).distinct()[:4]
 
-    return render(request, 'project_detail.html', {
-        'project': project,
-        'similar_projects': similar_projects
+    project.views += 1
+    project.save(update_fields=['views'])
+
+    return render(request, 'projects/project_detail.html', {
+        'project': project
     })
 
-def project_detail(request, project_id):
-    project = get_object_or_404(Projects, project_id=project_id)
-    similar_projects = Projects.objects.filter(skills__in=project.skills.all()).exclude(project_id=project_id).distinct()[:4]
-
-    if request.user.is_authenticated and request.user != project.author:
-        project.views += 1
-        project.save(update_fields=['views'])
-
-    return render(request, 'project_detail.html', {
-        'project': project,
-        'similar_projects': similar_projects
-    })
+@csrf_exempt  # or use `@login_required` + CSRF token if needed
+def like_project(request, project_id):
+    if request.method == 'POST':
+        project = get_object_or_404(Projects, project_id=project_id)
+        project.likes += 1
+        project.save(update_fields=['likes'])
+        return JsonResponse({'likes': project.likes})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 @login_required
 def create_resume_template(request):
@@ -360,6 +382,53 @@ def resume_preview(request, resume_id):
     resume = get_object_or_404(Resumes, id=resume_id, user=request.user)
     return render(request, 'resume/preview.html', {'resume': resume})
 
+@login_required
+def create_resume(request):
+    templates = ResumeTemplates.objects.all()
+    user = request.user
+    educations = Education.objects.filter(user)
+    experiences = Experiences.objects.filter(user)
+    profile = get_object_or_404(Profile, user=user)
+    additional_info = get_object_or_404(AdditionalInfo, user=user)
+
+    if request.method == 'POST':
+        form = ResumeForm(request.POST, request.FILES)
+        selected_template_id = request.POST.get('template_id')
+
+        if form.is_valid() and selected_template_id:
+            resume = form.save(commit=False)
+            resume.template = get_object_or_404(ResumeTemplates, id=selected_template_id)
+            resume.save()
+            form.save_m2m()
+            return redirect('preview_resume', resume_id=resume.resume_id)
+    else:
+        form = ResumeForm()
+
+    return render(request, 'resume/create_resume.html', {
+        'form': form,
+        'templates': templates,
+        'user': user,
+        'profile': profile,
+        'additional_info': additional_info,
+        'educations': educations,
+        'experiences': experiences
+    })
+
+@login_required
+def preview_resume(request, resume_id):
+    resume = get_object_or_404(Resumes, resume_id=resume_id)
+    template_file = resume.template.html_file.path
+    css_file = resume.template.css_file.url  # to be linked via static file or served from media
+
+    with open(template_file, 'r', encoding='utf-8') as file:
+        html_template = Template(file.read())
+
+    context = Context({**resume.__dict__, 'skills': resume.skills.all(), 'selected_education': resume.selected_education.all(), 'selected_experience': resume.selected_experience.all(), 'selected_projects': resume.selected_projects.all(), 'css_file': css_file})
+
+    rendered_html = html_template.render(context)
+    return HttpResponse(rendered_html)
+
+
 
 @login_required
 def delete_resume(request, resume_id):
@@ -386,7 +455,7 @@ def create_job_listing_and_application(request):
         job_form = JobListingForm()
         application_form = JobApplicationForm()
 
-    return render(request, 'my_progress.html', {
+    return render(request, 'job/my_progress.html', {
         'job_form': job_form,
         'app_form': application_form
     })
@@ -406,7 +475,7 @@ def edit_job_application(request, application_id):
     else:
         form = JobApplicationForm(instance=application)
 
-    return render(request, 'my_progress.html', {
+    return render(request, 'job/my_progress.html', {
         'form': form,
         'application': application
     })
@@ -414,7 +483,7 @@ def edit_job_application(request, application_id):
 # Job Listing Views
 def all_job_listings(request):
     jobs = JobListings.objects.all().order_by('-created_at')
-    return render(request, 'my_progress.html', {'jobs': jobs})
+    return render(request, 'job/my_progress.html', {'jobs': jobs})
 
 @login_required
 def delete_job(request, job_id):
@@ -463,6 +532,13 @@ def add_job_progress(request):
         'app_form': app_form
     })
 
+@login_required
+def progress_detail(request, application_id):
+    application = get_object_or_404(JobApplications, application_id=application_id)
+    return render(request, 'job/progress_detail.html', {
+        'application': application,
+        'job': application.job
+    })
 
 @login_required
 def search(request):
@@ -478,9 +554,9 @@ def search(request):
         Q(skills__name__icontains=query)
     ).distinct()
 
-    profile_results = User.objects.filter(
-        Q(username__icontains=query) |
-        Q(profile__full_name__icontains=query)
+    profile_results = Profile.objects.filter(
+        Q(user__username__icontains=query) |
+        Q(full_name__icontains=query)
     ).distinct()
 
     return render(request, 'search_results.html', {

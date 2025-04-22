@@ -67,6 +67,19 @@ body {
   color: var(--primary-light);
 }
 
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh; /* full height of viewport */
+  width: 250px;
+  background-color: #fff;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
 .sidebar .btn-field {
   padding: 50px 0;
 }
@@ -78,6 +91,7 @@ body {
 
 .main-content {
   flex-grow: 1;
+  margin-left: 250px;
   padding: 20px 50px;
 }
 

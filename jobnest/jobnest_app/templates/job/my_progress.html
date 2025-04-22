@@ -5,22 +5,26 @@
 <link rel="stylesheet" href="{% static 'css/progress.css' %}">
 
 <div class="card-grid">
-{% for job in job_applications %}
-    <div class="job-card">
-    <div class="job-icon">
-        <i class="fa-solid fa-briefcase"></i>
-    </div>
-    <h3>{{ job.job.title }}</h3>
-    <p class="company">{{ job.job.company }}</p>
-    <p class="location">{{ job.job.location }}</p>
-    <ul class="details">
-        <li>{{ job.job.job_type }}</li>
-        <li>Follow-up: {{ job.next_follow_up_date }}</li>
-        <li>Status: {{ job.application_status }}</li>
-        <li>Applied via: {{ job.application_medium }}</li>
-    </ul>
-    </div>
-{% endfor %}
+{% if job_applications %}
+    {% for job in job_applications %}
+        <a href="{% url 'progress_detail' job.application_id %}">
+        <div class="job-card">
+            <div class="job-icon">
+                <i class="fa-solid fa-briefcase"></i>
+            </div>
+            <h3>{{ job.job.title }}</h3>
+            <p class="company">{{ job.job.company }}</p>
+            <p class="location">{{ job.job.location }}</p>
+            <ul class="details">
+                <li>{{ job.job.job_type }}</li>
+                <li>Follow-up: {{ job.next_follow_up_date }}</li>
+                <li>Status: {{ job.application_status }}</li>
+                <li>Applied via: {{ job.application_medium }}</li>
+            </ul>
+        </div>
+        </a>
+    {% endfor %}
+{% endif %}
 
 <!-- Add New Card -->
 <div class="add-card">

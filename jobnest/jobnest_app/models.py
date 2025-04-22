@@ -151,6 +151,7 @@ class JobListings(models.Model):
 class JobApplications(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     job = models.ForeignKey(JobListings, on_delete=models.CASCADE)
+    application_id = models.AutoField(primary_key=True)
     applied_on = models.DateField(null=True, blank=True)
     next_follow_up_date = models.DateField(null=True, blank=True)
     application_medium = models.CharField(max_length=100, null=True, blank=True)

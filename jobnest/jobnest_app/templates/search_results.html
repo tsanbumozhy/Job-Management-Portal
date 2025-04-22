@@ -4,6 +4,9 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/project.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+
 <div class="container mt-5">
   <h2 class="mb-4">Search Results for "{{ query }}"</h2>
 
@@ -13,17 +16,28 @@
     <div class="row">
       {% if projects %}
         {% for project in projects %}
-          <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
-              {% if project.cover_image %}
-              <img src="{{ project.cover_image.url }}" class="card-img-top" alt="{{ project.title }}">
-              {% endif %}
-              <div class="card-body">
-                <h5 class="card-title">{{ project.title }}</h5>
-                <p class="card-text">{{ project.description|truncatechars:100 }}</p>
-                <a href="{% url 'project_detail' project.project_id %}" class="btn btn-primary">View Project</a>
+          <div class="project-card">
+              <a href="{% url 'project_detail' project.project_id %}">
+                  {% if project.cover_image %}
+                      <img src="{{ project.cover_image.url }}" class="project-img" alt="{{ project.title }}">
+                  {% else %}
+                      <img src="{% static 'media/project_covers/default_project_cover.png' %}" class="project-img" alt="{{ project.title }}">
+                  {% endif %}
+              </a>
+              <div class="project-info" style="text-align: start;">
+                  <h2 class="project-name">{{ project.name }}</h2>
+                  <h3 class="project-title">{{ project.title }}</h3>
+                  <p class="project-author">
+                      By {{ project.author.username }} | {{ project.created_at|date:"F j, Y" }}
+                  </p>
+                  <div class="project-meta">
+                      <span><i class="fa-solid fa-star"></i> {{ project.likes }}</span>
+                      <span><i class="fa-solid fa-eye"></i> {{ project.views }}</span>
+                  </div>
+                  <div class="project-description">
+                      {{ project.description|truncatewords:20 }}<span><a href="{% url 'project_detail' project.project_id %}">...view more</a></span>
+                  </div>
               </div>
-            </div>
           </div>
         {% endfor %}
       {% else %}
@@ -40,10 +54,10 @@
         {% for profile_user in profiles %}
           <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm d-flex flex-column align-items-center p-3">
-              <img src="{{ profile_user.profile.profile_photo.url }}" class="rounded-circle mb-3" width="80" height="80" alt="{{ profile_user.username }}">
-              <h6>{{ profile_user.profile.full_name }}</h6>
-              <p class="text-muted">@{{ profile_user.username }}</p>
-              <a href="{% url 'user_profile' profile_user.username %}" class="btn btn-outline-primary btn-sm mt-auto">View Profile</a>
+              <img src="{{ profile_user.profile_photo.url }}" class="rounded-circle mb-3" width="80" height="80" alt="{{ profile_user.user.username }}">
+              <h6>{{ profile_user.full_name }}</h6>
+              <p class="text-muted">@{{ profile_user.user.username }}</p>
+              <a href="{% url 'profile_detail' profile_user.user.username %}" class="btn btn-outline-primary btn-sm">View Profile</a>
             </div>
           </div>
         {% endfor %}

@@ -39,7 +39,9 @@
             <div class="card p-3 shadow-sm h-100">
               <h5>{{ exp.job_title }}</h5>
               <p>{{ exp.description }}</p>
-              <p>{{ exp.company_name }}<br><small>{{ exp.start_date }} - {{ exp.end_date|default:"Present" }}</small></p>
+              <p>{{ exp.company_name }}<br>
+                <small>{{ exp.start_date|date:"F Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"F Y" }}{% else %}Present{% endif %}                </small>
+              </p>
             </div>
           </div>
         {% endfor %}

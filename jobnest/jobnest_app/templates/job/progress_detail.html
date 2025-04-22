@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job Application Progress - {{ job.title }}{% endblock %}
+
+{% block content %}
+<style>
+    
+    .progress-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    }
+
+    .progress-header h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    }
+
+    .job-meta {
+    font-size: 14px;
+    color: #555;
+    margin-top: 5px;
+    }
+
+    .progress-section {
+    margin-bottom: 25px;
+    }
+
+    .progress-section h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #2980b9;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    }
+
+    .progress-section p {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 10px;
+    }
+
+    .resume-download {
+    margin-top: 15px;
+    }
+
+    .resume-download a {
+    text-decoration: none;
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    }
+
+    .resume-download a:hover {
+    background-color: #2980b9;
+    }
+
+</style>
+
+<div class="progress-container">
+  <div class="progress-header">
+    <div>
+      <h2>{{ job.title }}</h2>
+      <div class="job-meta">
+        <p><strong>Company:</strong> {{ job.company }}</p>
+        <p><strong>Location:</strong> {{ job.location }}</p>
+        <p><strong>Job Type:</strong> {{ job.job_type }}</p>
+        <p><strong>Posted on:</strong> {{ job.created_at|date:"F j, Y" }}</p>
+      </div>
+    </div>
+    <div>
+      <a href="{{ job.job_url }}" target="_blank" class="btn btn-outline-primary">View Job Posting</a>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <h4>Application Status</h4>
+    <p><strong>Applied On:</strong> {{ application.applied_on|date:"F j, Y" }}</p>
+    <p><strong>Status:</strong> {{ application.application_status }}</p>
+    <p><strong>Next Follow Up:</strong> {% if application.next_follow_up_date %}{{ application.next_follow_up_date|date:"F j, Y" }}{% else %}Not scheduled{% endif %}</p>
+    <p><strong>Application Medium:</strong> {{ application.application_medium }}</p>
+  </div>
+
+  {% if application.user_notes %}
+  <div class="progress-section">
+    <h4>User Notes</h4>
+    <p>{{ application.user_notes }}</p>
+  </div>
+  {% endif %}
+
+  {% if application.resume_file %}
+  <div class="progress-section resume-download">
+    <h4>Resume</h4>
+    <a href="{{ application.resume_file.url }}" target="_blank">Download Submitted Resume</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

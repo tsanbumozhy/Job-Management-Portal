@@ -24,11 +24,11 @@ from django.contrib.auth import views as auth_views
 
 from jobnest_app.views import (
     home, logout_view,
-    create_user, create_profile, continue_profile, edit_profile, create_additional_info, edit_additional_info, my_dashboard, add_education, add_experience,
+    create_user, create_profile, profile_detail, continue_profile, edit_profile, create_additional_info, edit_additional_info, my_dashboard, add_education, add_experience,
     add_skill, add_skill_ajax,
-    create_project, edit_project, delete_project, my_projects, project_detail,
-    create_resume_template, generate_resume, edit_resume, resume_preview, delete_resume,
-    create_job_listing_and_application, edit_job_application, all_job_listings, delete_job, my_progress, add_job_progress,
+    create_project, edit_project, delete_project, my_projects, project_detail, like_project, 
+    create_resume_template, create_resume, generate_resume, edit_resume, resume_preview, delete_resume,
+    create_job_listing_and_application, edit_job_application, all_job_listings, delete_job, my_progress, add_job_progress, progress_detail,
     search,
     mark_notification_as_read,
     UserViewSet, ProfileViewSet, ProjectsViewSet
@@ -60,6 +60,7 @@ urlpatterns = [
     path('profile/additional/edit/', edit_additional_info, name='edit_additional_info'),
     path('profile/additional/add_education/', add_education, name='add_education'),
     path('profile/additional/add_experience/', add_experience, name='add_experience'),
+    path('profile/<str:username>/', profile_detail, name='profile_detail'),
 
     path('add_skill/', add_skill, name='add_skill'),
     path('add-skill-ajax/', add_skill_ajax, name='add_skill_ajax'),
@@ -72,6 +73,7 @@ urlpatterns = [
 
     path('edit_project/<str:project_id>/', edit_project, name='edit_project'),
     path('delete_project/<str:project_id>/', delete_project, name='delete_project'),  
+    path('project/<int:project_id>/like/', like_project, name='like_project'),
 
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('accounts/logout/', logout_view, name='logout'),
@@ -85,6 +87,7 @@ urlpatterns = [
 
     # User Progress
     path('progress/', my_progress, name='my_progress'),
+    path('progress/<int:application_id>/', progress_detail, name='progress_detail'),
     path('add-job/', add_job_progress, name='add_job_progress'),
 
     # Resume Template Management
@@ -92,6 +95,7 @@ urlpatterns = [
     
     # Resume Creation & Management
     path('resume/generate/', generate_resume, name='generate_resume'),
+    path('resume/create/', create_resume, name='create_resume'),
     path('resume/edit/<int:resume_id>/', edit_resume, name='edit_resume'),
     path('resume/preview/<int:resume_id>/', resume_preview, name='resume_preview'),
     path('resume/delete/<int:resume_id>/', delete_resume, name='delete_resume'),

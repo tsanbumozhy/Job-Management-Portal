@@ -1,16 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile</title>
-
-    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
-    <script src="https://kit.fontawesome.com/704721be89.js" crossorigin="anonymous"></script>
-</head>
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
 <body>
     <div class="form-wrapper">
         <h2 id="title">Edit Your Profile</h2>
@@ -62,4 +54,4 @@
         </form>
     </div>
 </body>
-</html>
+{% endblock %}

@@ -32,9 +32,9 @@
         <a href="{% url 'my_projects' %}"><i class="fas fa-folder-open"></i> My Projects</a>
         <a href="{% url 'my_progress' %}"><i class="fas fa-chart-line"></i> My Progress</a>
         <a href="{% url 'my_dashboard' %}"><i class="fas fa-th-large"></i> My Dashboard</a>
-        <a href="{% url 'generate_resume' %}"><i class="fas fa-file-alt"></i> Generate Resume</a>
+        <a href="{% url 'create_resume' %}"><i class="fas fa-file-alt"></i> Generate Resume</a>
 
-        {% if user.is_authenticated and not not user.additional_info.is_profile_complete %}
+        {% if user.is_authenticated and not user.additional_info.is_profile_complete %}
         <div class="btn-field mb-3">
           <a href="{% url 'create_additional_info' %}" class="btn btn-warning">Complete your Profile</a>
         </div>

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Resume{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Create Your Resume</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="mb-4">
+      <label for="template_id" class="form-label">Select a Template:</label>
+      <div class="row">
+        {% for template in templates %}
+        <div class="col-md-4">
+          <label class="d-block border rounded p-2 text-center">
+            <input type="radio" name="template_id" value="{{ template.id }}" class="form-check-input me-2">
+            <strong>{{ template.name }}</strong>
+            <img src="{{ template.preview_image.url }}" alt="Preview" class="img-fluid mt-2">
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Generate Resume</button>
+  </form>
+</div>
+{% endblock %}

@@ -2,44 +2,148 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/project.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+
 <div class="profile-container">
     <div class="profile-card">
         <div class="profile-header">
-            <img class="profile-pic" src="{{ profile.profile_pic.url }}" alt="Profile Picture">
+            {% if user.profile.profile_photo %}
+                <img src="{{ user.profile.profile_photo.url }}" alt="Profile Picture" class="profile-pic" width="150" height="200">
+            {% else %}
+                <img src="{% static 'media/profile_photos/default_user_avatar.png' %}" alt="Profile Picture" class="profile-pic" width="32" height="32">
+            {% endif %}
             <div class="user-info">
                 <h2>{{ profile.full_name }}</h2>
-                <p class="username">@{{ user.username }}</p>
+                <p class="email">{{ user.email }}</p>
                 {% if profile.bio %}
-                    <p class="bio">{{ profile.bio }}</p>
+                    <p class="objective">{{ profile.objective }}</p>
                 {% endif %}
+                <div class="profile-details">
+                    {% if additional_info.github_url %}
+                        <p><strong>GitHub:</strong> <a href="{{ profile.github_link }}" target="_blank">{{ additional_info.github_url }}</a></p>
+                    {% endif %}
+                    {% if additional_info.linkedin_url %}
+                        <p><strong>LinkedIn:</strong> <a href="{{ profile.linkedin_link }}" target="_blank">{{ additional_info.linkedin_url }}</a></p>
+                    {% endif %}
+                    {% if additional_info.portfolio_url %}
+                        <p><strong>Portfolio:</strong> <a href="{{ profile.linkedin_link }}" target="_blank">{{ additional_info.portfolio_url }}</a></p>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <div class="profile-details">
-            {% if profile.phone %}
-                <p><strong>Phone:</strong> {{ profile.phone }}</p>
-            {% endif %}
-            {% if profile.address %}
-                <p><strong>Address:</strong> {{ profile.address }}</p>
-            {% endif %}
-            {% if profile.github_link %}
-                <p><strong>GitHub:</strong> <a href="{{ profile.github_link }}" target="_blank">{{ profile.github_link }}</a></p>
-            {% endif %}
-            {% if profile.linkedin_link %}
-                <p><strong>LinkedIn:</strong> <a href="{{ profile.linkedin_link }}" target="_blank">{{ profile.linkedin_link }}</a></p>
-            {% endif %}
-        </div>
+        {% if additional_info.skills.all %}
+            <div class="mb-3">
+            <h6>Skills:</h6>
+            {% for skill in additional_info.skills.all %}
+                <span class="badge bg-primary me-1">{{ skill.name }}</span>
+            {% endfor %}
+            </div>
+        {% endif %}
+
 
         <div class="user-projects">
             <h3>Projects by {{ profile.full_name }}</h3>
             <div class="projects-list">
-                {% for project in user_projects %}
-                    {% include 'partials/project_card.html' with project=project %}
-                {% empty %}
-                    <p>No projects found for this user.</p>
+                {% if MyProjects %}
+                {% for project in MyProjects %}
+                    <div class="project-card">
+                        <a href="{% url 'project_detail' project.project_id %}">
+                            {% if project.cover_image %}
+                                <img src="{{ project.cover_image.url }}" class="project-img" alt="{{ project.title }}">
+                            {% else %}
+                                <img src="{% static 'media/project_covers/default_project_cover.png' %}" class="project-img" alt="{{ project.title }}">
+                            {% endif %}
+                        </a>
+                        <div class="project-info" style="text-align: start;">
+                            <h2 class="project-name">{{ project.name }}</h2>
+                            <h3 class="project-title">{{ project.title }}</h3>
+                            <p class="project-author">
+                                By {{ project.author.username }} | {{ project.created_at|date:"F j, Y" }}
+                            </p>
+                            <div class="project-meta">
+                                <span><i class="fa-solid fa-star"></i> {{ project.likes }}</span>
+                                <span><i class="fa-solid fa-eye"></i> {{ project.views }}</span>
+                            </div>
+                            <div class="project-description">
+                                {{ project.description|truncatewords:20 }}<span><a href="{% url 'project_detail' project.project_id %}">...view more</a></span>
+                            </div>
+                        </div>
+                    </div>
                 {% endfor %}
+            {% endif %}
             </div>
         </div>
+
+        <div class="container my-4">          
+            <!-- Education Section -->
+            <div class="mb-5">
+              <h4>Education</h4>
+              <div class="row g-3">
+                {% if educations %}
+                  {% for edu in educations %}
+                    <div class="col-md-4">
+                      <div class="card p-3 shadow-sm h-100">
+                        <h5>{{ edu.title }}</h5>
+                        <p>{{ edu.institution }}<br><small>{{ edu.start_year }} - {{ edu.end_year }}</small></p>
+                        <h5>{{ edu.score }}</h5>
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+                <div class="col-md-4">
+                  <a href="{% url 'add_education' %}" class="card add-card d-flex align-items-center justify-content-center shadow-sm text-decoration-none">
+                      <i class="fa-solid fa-plus" style="font-size: larger;"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          
+            <!-- Experience Section -->
+            <div>
+              <h4>Experience</h4>
+              <div class="row g-3">
+                {% if experiences %}
+                  {% for exp in experiences %}
+                    <div class="col-md-4">
+                      <div class="card p-3 shadow-sm h-100">
+                        <h5>{{ exp.job_title }}</h5>
+                        <p>{{ exp.description }}</p>
+                        <p>{{ exp.company_name }}<br>
+                          <small>{{ exp.start_date|date:"F Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"F Y" }}{% else %}Present{% endif %}                </small>
+                        </p>
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+                <div class="col-md-4">
+                  <a href="{% url 'add_experience' %}" class="card add-card d-flex align-items-center justify-content-center shadow-sm text-decoration-none">
+                      <i class="fa-solid fa-plus"  style="font-size: larger;"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+        </div> 
+
+
+
     </div>
 </div>
+
+<style>
+    .add-card {
+      height: 100%;
+      min-height: 150px;
+      border: 2px dashed #ccc;
+      background-color: #f9f9f9;
+      transition: all 0.3s ease-in-out;
+    }
+  
+    .add-card:hover {
+      background-color: #e9ecef;
+      border-color: #999;
+    }
+  </style>
+
 {% endblock %}

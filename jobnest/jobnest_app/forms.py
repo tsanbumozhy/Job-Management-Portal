@@ -3,6 +3,8 @@ from django.core.files import File
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+from datetime import datetime
+
 from .models import Profile, AdditionalInfo, Projects, Skills, Education, Experiences, ResumeTemplates, Resumes, JobListings, JobApplications 
 
 PROJECT_CATEGORY = [
@@ -139,7 +141,12 @@ class AdditionalInfoForm(forms.ModelForm):
 
     class Meta:
         model = AdditionalInfo
+        exclude = ['user']
         fields = ['gender', 'date_of_birth', 'languages_known', 'mobile_number', 'address', 'location', 'github_url', 'linkedin_url', 'portfolio_url', 'skills', 'achievements', 'resume_file']
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
 
     def clean_date_of_birth(self):
         dob = self.cleaned_data.get('date_of_birth')
@@ -169,13 +176,12 @@ class AdditionalInfoForm(forms.ModelForm):
             raise forms.ValidationError("Enter a valid LinkedIn profile URL.")
         return linkedin_url
 
-    def save(self, user, commit=True):
+    def save(self, commit=True):
         instance = super().save(commit=False)
-        instance.user = user
+        instance.user = self.user
         if commit:
             instance.save()
         return instance
-
 
 class EducationForm(forms.ModelForm):
     class Meta:
@@ -209,17 +215,22 @@ class EducationForm(forms.ModelForm):
         }
 
 class ExperienceForm(forms.ModelForm):
+    start_date = forms.CharField(widget=forms.DateInput(attrs={'type': 'month', 'class': 'form-control'}))
+    end_date = forms.CharField(required=False, widget=forms.DateInput(attrs={'type': 'month', 'class': 'form-control'}))
+
     class Meta:
         model = Experiences
         fields = ['job_title', 'description', 'company_name', 'start_date', 'end_date']
 
-        widgets = {
-            'job_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter job title'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter job description', 'rows': 3}),
-            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter company name'}),
-            'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'month'}),
-            'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'month'}),
-        }
+    def clean_start_date(self):
+        data = self.cleaned_data['start_date']
+        return datetime.strptime(data, '%Y-%m').date()
+
+    def clean_end_date(self):
+        data = self.cleaned_data.get('end_date')
+        if data:
+            return datetime.strptime(data, '%Y-%m').date()
+        return None
 
 class ProjectForm(forms.ModelForm):
     category = forms.ChoiceField( choices = PROJECT_CATEGORY, widget=forms.Select(attrs={'class': 'form-control'}))
